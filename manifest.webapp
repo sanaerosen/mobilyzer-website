@@ -1,0 +1,6 @@
+{
+  "name":"Mobiperf Visualization",
+  "description":"Map of Mobiperf data",
+  "launch_path":"/mobile.html"
+
+}

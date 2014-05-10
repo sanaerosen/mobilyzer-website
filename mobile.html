@@ -56,7 +56,15 @@ function toggleAbout() {
     } else {
         about.style.display = 'none';
     }
+}
 
+function toggleFilterPane(itemname) {
+    var item = document.getElementById(itemname);
+    if (item.style.display === 'none') {
+        item.style.display = '';
+    } else {
+        item.style.display = 'none';
+    }
 }
 </script>
 </head>
@@ -88,8 +96,8 @@ function toggleAbout() {
     </div>
     <div id="filter" class="hidepane" style="display:none">
             <div id="datatypechooser">
-                <div class="filtertitle">Data type</div>
-                <form name="datachooserform">
+                <div class="filtertitle" onclick="toggleFilterPane('datachooserhide')">Data type</div>
+                <form name="datachooserform" id="datachooserhide">
                     <input class="datatypebutton" type="radio" name="datatype" value="rtt" checked>Ping</br>
                     <input class="datatypebutton" type="radio" name="datatype" value="rtt_packetloss">Packet loss fraction</br>
                     <input class="datatypebutton" type="radio" name="datatype" value="dns_lookup">DNS lookup time</br>
@@ -97,12 +105,17 @@ function toggleAbout() {
                 </form>
             </div>
 
-            <div class="filtertitle">Dates</div>
-            <div id="dateslider" class="filtertext"></div>
-            <div class="filtertitle">Stats</div>
-            <div id="stats" class="filtertext"></div>
-            <div class="filtertitle">Point Radius</div>
-        <div id="radiusslider" class="slider"></div><div id="radiusslidervalue" class="filtertext"></div>
+            <div class="filtertitle" onclick="toggleFilterPane('network')">Network type</div>
+            <div id="network" class="filtertext" style="display:none">            </div>
+            <div class="filtertitle" onclick="toggleFilterPane('carrier')">Carriers</div>
+            <div id="carrier" class="filtertext" style="display:none">            </div>
+
+            <div class="filtertitle" onclick="toggleFilterPane('dateslider')">Dates</div>
+            <div id="dateslider" class="filtertext" style="display:none"></div>
+            <div class="filtertitle" onclick="toggleFilterPane('stats')">Stats</div>
+            <div id="stats" class="filtertext" style="display:none"></div>
+            <div class="filtertitle" onclick="toggleFilterPane('radiusbox')">Point Radius</div>
+            <div id="radiusbox" style="display:none"><div id="radiusslider" class="slider"></div><div id="radiusslidervalue" class="filtertext"></div></div>
     </div>
     <div id="about" class="hidepane" style="display:none">
         <div class="aboutbox">
