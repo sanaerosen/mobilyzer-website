@@ -66,6 +66,32 @@ function toggleFilterPane(itemname) {
         item.style.display = 'none';
     }
 }
+
+function toggleAdvanced() {
+    var simple = document.getElementById("simplechooserform");
+    var complex = document.getElementById("complexchooserform");
+    if (simple.style.display === 'none') {
+        complex.style.display = 'none';
+        simple.style.display = '';
+    } else {
+        simple.style.display = 'none';
+        complex.style.display = '';
+    }
+}
+
+function toggleAdvancedPane(itemname) {
+    var item = document.getElementById(itemname);
+    var panes = ["advanced_ping", "advanced_tr", "advanced_dns", "advanced_tcp", "advanced_udp", "advanced_http"];
+    if (item.style.display === 'none') {
+        for (var i=0; i < panes.length; i++) {
+                pane = document.getElementById(panes[i]);
+                pane.style.display = 'none';
+        }
+        item.style.display = '';
+    } else {
+        item.style.display = "none";
+    }
+}
 </script>
 </head>
 
@@ -97,12 +123,80 @@ function toggleFilterPane(itemname) {
     <div id="filter" class="hidepane" style="display:none">
             <div id="datatypechooser">
                 <div class="filtertitle" onclick="toggleFilterPane('datachooserhide')">Data type</div>
-                <form name="datachooserform" id="datachooserhide">
-                    <input class="datatypebutton" type="radio" name="datatype" value="rtt" checked>Ping</br>
-                    <input class="datatypebutton" type="radio" name="datatype" value="rtt_packetloss">Packet loss fraction</br>
-                    <input class="datatypebutton" type="radio" name="datatype" value="dns_lookup">DNS lookup time</br>
+                <div id="datachooserhide">
+
+                    <form name="datachooserform" id="simplechooserform">
+                        <input class="datatypebutton" type="radio" name="datatype" value="rtt" checked>Ping</br>
+                        <input class="datatypebutton" type="radio" name="datatype" value="rtt_packetloss">Packet loss fraction</br>
+                        <input class="datatypebutton" type="radio" name="datatype" value="dns_lookup">DNS lookup time</br>
+                        <input class="datatypebutton" type="button" name="button" value="Set data type" onclick="createVisualization()">
+                        <input class="datatypebutton" type="button" name="button_advanced" value="Show advanced..." onclick="toggleAdvanced()">
+                    </form>
+
+                <div id="complexchooserform" style="display:none">
+
+                    <div class="filteradvancedtitle"  onclick="toggleAdvancedPane('advanced_ping')"> Ping</div>
+                    <form name="datachooserform_ping"  id="advanced_ping" style="display:none">
+                        <select name="pingdropdown">
+                            <option value="placeholder">TODO target</option>
+                        </select></br>
+                        <input class="datatypebutton" type="radio" name="datatype_ping" value="ping_mean" checked>Mean</br>
+                        <input class="datatypebutton" type="radio" name="datatype_ping" value="ping_worst" >Worst-case per test</br>
+                        <input class="datatypebutton" type="radio" name="datatype_ping" value="ping_stdev" >Variation (stddev)</br>
+                        <input class="datatypebutton" type="radio" name="datatype_ping" value="ping_loss" >Packets lost</br>
+                    </form>
+
+                    <div class="filteradvancedtitle" onclick="toggleAdvancedPane('advanced_tr')"> Traceroute</div>
+                    <form name="datachooserform_tr" id="advanced_tr"  style="display:none">
+                        <select name="pingdropdown">
+                            <option value="placeholder">TODO target</option>
+                        </select></br>
+                        <input class="datatypebutton" type="radio" name="datatype_tr" value="trace_first" checked>First hop latency</br>
+                        <input class="datatypebutton" type="radio" name="datatype_tr" value="trace_avg" >Avg. latency</br>
+                        <input class="datatypebutton" type="radio" name="datatype_tr" value="trace_num" >Number of hops</br>
+                    </form>
+
+                    <div class="filteradvancedtitle" onclick="toggleAdvancedPane('advanced_dns')"> DNS </div>
+                    <form name="datachooserform_dns"  id="advanced_dns" style="display:none">
+                        <select name="pingdropdown">
+                            <option value="placeholder">TODO target</option>
+                        </select></br>
+                        <input class="datatypebutton" type="radio" name="datatype_dns" value="trace_first" checked >Latency</br>
+                    </form>
+
+                    <div class="filteradvancedtitle" onclick="toggleAdvancedPane('advanced_http')"> HTTP </div>
+                    <form name="datachooserform_http"  id="advanced_http" style="display:none">
+                        <select name="pingdropdown">
+                            <option value="placeholder">TODO target</option>
+                        </select></br>
+                        <input class="datatypebutton" type="radio" name="datatype_http" value="http_time" checked>Time to complete</br>
+                        <input class="datatypebutton" type="radio" name="datatype_http" value="http_throughput"> Avg. throughput</br>
+                    </form>
+
+                    <div class="filteradvancedtitle"  onclick="toggleAdvancedPane('advanced_tcp')"> TCP </div>
+                    <form name="datachooserform_tcp"  id="advanced_tcp" style="display:none">
+                        <select name="pingdropdown">
+                            <option value="placeholder">TODO direction</option>
+                        </select></br>
+                        <input class="datatypebutton" type="radio" name="datatype_tcp" value="tcp_throughput" checked>Throughput</br>
+                    </form>
+
+                    <div class="filteradvancedtitle" onclick="toggleAdvancedPane('advanced_udp')"> UDP </div>
+                    <form name="datachooserform_udp"  id="advanced_udp" style="display:none">
+                        <select name="pingdropdown">
+                            <option value="placeholder">TODO direction</option>
+                        </select></br>
+                        <input class="datatypebutton" type="radio" name="datatype_udp" value="udp_jitter" checked>Jitter</br>
+                        <input class="datatypebutton" type="radio" name="datatype_udp" value="udp_outoforder" >Out of order</br>
+                        <input class="datatypebutton" type="radio" name="datatype_udp" value="udp_lossrate" >Loss rate</br>
+                    </form>
+
                     <input class="datatypebutton" type="button" name="button" value="Set data type" onclick="createVisualization()">
-                </form>
+                    <input class="datatypebutton" type="button" name="button_simple" value="Show basic..." onclick="toggleAdvanced()">
+                </div>
+
+
+                </div>
             </div>
 
             <div class="filtertitle" onclick="toggleFilterPane('network')">Network type</div>
@@ -114,8 +208,8 @@ function toggleFilterPane(itemname) {
             <div id="dateslider" class="filtertext" style="display:none"></div>
             <div class="filtertitle" onclick="toggleFilterPane('stats')">Stats</div>
             <div id="stats" class="filtertext" style="display:none"></div>
-            <div class="filtertitle" onclick="toggleFilterPane('radiusbox')">Point Radius</div>
-            <div id="radiusbox" style="display:none"><div id="radiusslider" class="slider"></div><div id="radiusslidervalue" class="filtertext"></div></div>
+            <!--<div class="filtertitle" onclick="toggleFilterPane('radiusbox')">Point Radius</div>
+            <div id="radiusbox" style="display:none"><div id="radiusslider" class="slider"></div><div id="radiusslidervalue" class="filtertext"></div></div>-->
     </div>
     <div id="about" class="hidepane" style="display:none">
         <div class="aboutbox">

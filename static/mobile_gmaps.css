@@ -46,7 +46,13 @@
                 margin: 2px;
 				background-color: #555;
                 color: white;
-
+            }
+            .filteradvancedtitle {
+                font-weight: bold;
+                padding: 1px;
+                margin: 1px;
+				background-color: #888;
+                color: white;
             }
             .filtertext{
                 padding: 5px;
