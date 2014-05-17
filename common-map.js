@@ -9,22 +9,65 @@ var uniq_net;
 var maxrtt = 0;
 var def_radius = 15;
 
+// TODO real values
 var green_thres = {
     "rtt": 100,
     "rtt_packetloss": 0.005,
-    "dns_lookup":100
+    "throughput":1000,
+    "ping_mean":100,
+    "ping_worst":100,
+    "ping_stdev":30,
+    "ping_loss":0.005,
+    "trace_first":50,
+    "trace_avg":100,
+    "trace_num":7,
+    "dns_rtt":100,
+    "http_time":300,
+    "http_throughput":500,
+    "tcp_throughput":1000,
+    "udp_jitter":1,
+    "udp_outoforder":1,
+    "udp_lossrate":0.005
 }
 
 var yellow_thres = {
     "rtt": 200,
     "rtt_packetloss": 0.01,
-    "dns_lookup":200
+    "throughput":500,
+    "ping_mean":200,
+    "ping_worst":200,
+    "ping_stdev":70,
+    "ping_loss":0.01,
+    "trace_first":100,
+    "trace_avg":200,
+    "trace_num":15,
+    "dns_rtt":200,
+    "http_time":800,
+    "http_throughput":250,
+    "tcp_throughput":500,
+    "udp_jitter":5,
+    "udp_outoforder":3,
+    "udp_lossrate":0.01
 }
 
 var orange_thres = {
     "rtt": 300,
     "rtt_packetloss": 0.05,
-    "dns_lookup":300
+    "throughput":100,
+    "ping_mean":300,
+    "ping_worst":400,
+    "ping_stdev":100,
+    "ping_loss":0.05,
+    "trace_first":150,
+    "trace_avg":300,
+    "trace_num":30,
+    "dns_rtt":300,
+    "http_time":1000,
+    "http_throughput":100,
+    "tcp_throughput":50,
+    "udp_jitter":10,
+    "udp_outoforder":7,
+    "udp_lossrate":0.05
 }
 
 
@@ -99,17 +142,32 @@ function filter()
 
             // For clustermap
             var color;
-            if (avg_rtt<=green_thres[data_chosen]) {
-                color='green'
-            }
-            else if (avg_rtt>green_thres[data_chosen] && avg_rtt<=yellow_thres[data_chosen]) {
-                color='yellow'
-            }
-            else if (avg_rtt>yellow_thres[data_chosen] && avg_rtt<=orange_thres[data_chosen]) {
-                color='orange'
-            }
-            else{
-                color='red'
+            if (data_chosen.indexOf("throughput") > -1){
+                if (avg_rtt>=green_thres[data_chosen]) {
+                    color='green'
+                }
+                else if (avg_rtt<green_thres[data_chosen] && avg_rtt>=yellow_thres[data_chosen]) {
+                    color='yellow'
+                }
+                else if (avg_rtt<yellow_thres[data_chosen] && avg_rtt>=orange_thres[data_chosen]) {
+                    color='orange'
+                }
+                else{
+                    color='red'
+                }
+            } else {
+                if (avg_rtt<=green_thres[data_chosen]) {
+                    color='green'
+                }
+                else if (avg_rtt>green_thres[data_chosen] && avg_rtt<=yellow_thres[data_chosen]) {
+                    color='yellow'
+                }
+                else if (avg_rtt>yellow_thres[data_chosen] && avg_rtt<=orange_thres[data_chosen]) {
+                    color='orange'
+                }
+                else{
+                    color='red'
+                }
             }
             c = {}
             //c[color]=1
@@ -144,12 +202,50 @@ window.onload = createVisualization;
 function createVisualization(){
 
     var data_chosen;
-    var radio = document.getElementsByName("datatype");
-    for (var val in radio) {
-          if (radio[val].checked) {
-              data_chosen = radio[val].value; 
+    var radio;
+    
+
+    // Fill in the drop-down menus
+    /*var dropdownelements = {"ping":{}, "traceroute":{}, "dns":{}, "http":{}, "tcp":{}}, udp:{}
+    for (var i = 0; i < filtered_data.length; i++) {
+        elem = filtered_data[i];
+    }
+
+    var dropdowns = {"pingdropdown":"ping", "trdropdown":"traceroute", "dnsdropdown":"dns" , "httpdropdown":"http", "tcpdropdown":"tcp", "udpdropdown":"udp"}
+    for (var key in dropdowns) {
+        var dropdown = document.getElementById(key);
+
+    }*/
+
+    // Find the data type we are analyzing
+    if (document.getElementById("complexchooserform").style.display === '') { 
+        var panes = ["advanced_ping", "advanced_tr", "advanced_dns", "advanced_tcp", "advanced_udp", "advanced_http"];
+        var pane_mapping = {"advanced_ping": "datatype_ping", "advanced_tr": "datatype_tr", "advanced_dns": "datatype_dns", "advanced_tcp": "datatype_tcp", "advanced_udp": "datatype_udp", "advanced_http":"datatype_http"};
+        for (var i=0; i < panes.length; i++) {
+            pane = document.getElementById(panes[i])
+            if (pane != null && pane.style.display === '') {
+                radio = document.getElementsByName(pane_mapping[panes[i]]);
+                break;
+            }
         }
     }
+
+    if (typeof radio === 'undefined') {
+        
+        radio = document.getElementsByName("datatype");
+    }
+
+    for (var val in radio) {
+        if (radio[val].checked) {
+            data_chosen = radio[val].value; 
+        }
+    }
+
+    var string_to_category = {"rtt":"ping", "rtt_packetloss":"ping", "throughput":"tcp", "ping_mean":"ping", "ping_worst":"ping", "ping_stdev":"ping", "ping_loss":"ping", "trace_first":"traceroute", "trace_avg":"traceroute", "trace_num":"traceroute", "dns_rtt":"dns", "http_time":"http", "http_throughput":"http", "tcp_throughput":"tcp", "udp_jitter":"udp", "udp_outoforder":"udp", "udp_lossrate":"udp"}
+    var string_to_datatype= {"rtt":"mean", "rtt_packetloss":"packetloss", "throughput":"throughput", "ping_mean":"mean", "ping_worst":"max", "ping_stdev":"stdev", "ping_loss":"packetloss", "trace_first":"first_hop", "trace_avg":"avg_rtt", "trace_num":"num_hops", "dns_rtt":"time", "http_time":"time", "http_throughput":"avg_throughput", "tcp_throughput":"throughput", "udp_jitter":"jitter", "udp_outoforder":"outoforder", "udp_lossrate":"loss_rate"}
+
+    var category = string_to_category[data_chosen];
+    var data_chosen_type = string_to_datatype[data_chosen];
 
     //Clean up data
     filtered_data1 = jQuery.grep(data, function(elem, idx){
@@ -161,12 +257,9 @@ function createVisualization(){
   /**********************************************************************
         Generate form fields
      *********************************************************************/
-    //List all metro areas
-    //$("#area").html('')
-    //uniq_area = get_unique(filtered_data, "ar")
-    //uniq_area.forEach(function(elem,idx,arr){
-    //    $("#area").append('<input type="checkbox" onchange="filter()" id="cb_ar_' + elem+'" checked>'+ elem + '</input><br/>')
-    //});
+
+    // TODO break carriers down by region
+    // TODO set all parameters for targets
 
     //List all carriers
     $("#carrier").html('')
@@ -188,10 +281,10 @@ function createVisualization(){
         return(elem.net != "wifi");
     });
 
-  generateMap(filtered_data, data_chosen)
+  generateMap(filtered_data, data_chosen_type, category, data_chosen)
 };
 
-function generateMap(filtered_data, data_chosen) {
+function generateMap(filtered_data, data_chosen, category, data_name) {
 
   /**********************************************************************
         Prepare data for loading
@@ -241,26 +334,43 @@ function generateMap(filtered_data, data_chosen) {
 
         var legend = document.createElement('div');
         legend.id = 'legend';
-        legendContent(legend, data_chosen);
+        legendContent(legend, data_name);
         legend.index = 1;
         map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
 
 
+
         clustermapelements = [];
+        console.log(category);
+        console.log(data_chosen);
         for (var i = 0; i < filtered_data.length; i++) {
-            elem = filtered_data[i]
-            var count = elem["ct"];
-            var avg_rtt = elem[data_chosen];
+            elem = filtered_data[i];
+
+//            console.log(elem);
+
+            if (!(category in elem)) {
+                continue;
+            }
+            var type = "all";
+            if (!("all" in elem[category])) {
+                if (!("False" in elem[category])) {
+                    continue;
+                }
+                type = "False";
+
+            }
+            var count = elem[category][type]["ct"];
+            var avg_rtt = elem[category][type][data_chosen]; // TODO replace by actual filter
             //var avg_rtt = elem["rtt"];
             // For clustermap
             var color;
-            if (avg_rtt<=green_thres[data_chosen]) {
+            if (avg_rtt<=green_thres[data_name]) {
                 color='green'
             }
-            else if (avg_rtt>green_thres[data_chosen] && avg_rtt<=yellow_thres[data_chosen]) {
+            else if (avg_rtt>green_thres[data_name] && avg_rtt<=yellow_thres[data_name]) {
                 color='yellow'
             }
-            else if (avg_rtt>yellow_thres[data_chosen] && avg_rtt<=orange_thres[data_chosen]) {
+            else if (avg_rtt>yellow_thres[data_name] && avg_rtt<=orange_thres[data_name]) {
                 color='orange'
             }
             else{
@@ -268,7 +378,7 @@ function generateMap(filtered_data, data_chosen) {
             }
             c = {}
             //c[color]=1
-            c[color]=elem.ct
+            c[color]=count;
             clustermapelements.push({
                 'label': 'X',
                 'coordinates': {'lat': elem["lat"], 'lng': elem["lng"]},
@@ -319,11 +429,25 @@ function generateMap(filtered_data, data_chosen) {
 
 // Generate the content for the legend
 function legendContent(legend, data_chosen) {
-
     var title_options = {
-        rtt: "Average RTT (ms)",
-        rtt_packetloss: "Fraction of packets lost",
-        dns_lookup: "Average DNS lookup time (ms)"
+        "rtt": "Average RTT (ms)",
+        "rtt_packetloss": "Fraction of packets lost",
+        "throughput": "Average throughput",
+        "ping_mean": "Average RTT (ms)",
+        "ping_worst": "Worst-case ping (per test)",
+        "ping_stdev": "Variation in ping (stddev)",
+        "ping_loss": "Packets lost (ping)",
+        "trace_first": "First-hop latency",
+        "trace_avg": "Avg. latency (traceroute)",
+        "trace_num": "Num. hops (traceroute)",
+        "dns_rtt": "DNS latency (ms)",
+        "http_time": "HTTP load time",
+        "http_throughput": "HTTP avg. throughput",
+        "tcp_throughput": "Average throughput",
+        "udp_jitter": "Jitter",
+        "udp_outoforder": "Out of order packets",
+        "udp_lossrate": "Packet loss rate"
+
     }
 
     // A title for the legend.

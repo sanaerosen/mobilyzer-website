@@ -14,7 +14,7 @@
 				border-bottom: #aaa;
 				font-size: 16pt;	
 				font-weight: bold;
-                height=100px;
+                height:100px;
                 width: 100%;
 			}
             #selectbar{
@@ -24,7 +24,7 @@
 				padding: 10px;
 				font-size: 14pt;	
 				font-weight: bold;
-                height=70px;
+                height:70px;
                 width: 100%;
             }
             .datatypebutton {
