@@ -9,11 +9,13 @@ var uniq_net;
 var maxrtt = 0;
 var def_radius = 15;
 
+var dropdownsinitialized = false;
+
 // TODO real values
 var green_thres = {
     "rtt": 100,
     "rtt_packetloss": 0.005,
-    "throughput":1000,
+    "throughput":10000,
     "ping_mean":100,
     "ping_worst":100,
     "ping_stdev":30,
@@ -24,7 +26,7 @@ var green_thres = {
     "dns_rtt":100,
     "http_time":300,
     "http_throughput":500,
-    "tcp_throughput":1000,
+    "tcp_throughput":10000,
     "udp_jitter":1,
     "udp_outoforder":1,
     "udp_lossrate":0.005
@@ -33,7 +35,7 @@ var green_thres = {
 var yellow_thres = {
     "rtt": 200,
     "rtt_packetloss": 0.01,
-    "throughput":500,
+    "throughput":5000,
     "ping_mean":200,
     "ping_worst":200,
     "ping_stdev":70,
@@ -44,7 +46,7 @@ var yellow_thres = {
     "dns_rtt":200,
     "http_time":800,
     "http_throughput":250,
-    "tcp_throughput":500,
+    "tcp_throughput":5000,
     "udp_jitter":5,
     "udp_outoforder":3,
     "udp_lossrate":0.01
@@ -53,7 +55,7 @@ var yellow_thres = {
 var orange_thres = {
     "rtt": 300,
     "rtt_packetloss": 0.05,
-    "throughput":100,
+    "throughput":500,
     "ping_mean":300,
     "ping_worst":400,
     "ping_stdev":100,
@@ -64,12 +66,39 @@ var orange_thres = {
     "dns_rtt":300,
     "http_time":1000,
     "http_throughput":100,
-    "tcp_throughput":50,
+    "tcp_throughput":500,
     "udp_jitter":10,
     "udp_outoforder":7,
     "udp_lossrate":0.05
 }
+function toggleAdvanced() {
+    var simple = document.getElementById("simplechooserform");
+    var complex = document.getElementById("complexchooserform");
+    if (simple.style.display === 'none') {
+        complex.style.display = 'none';
+        simple.style.display = '';
+    } else {
+        simple.style.display = 'none';
+        complex.style.display = '';
+    }
+}
 
+function toggleAdvancedPane(itemname) {
+    var item = document.getElementById(itemname);
+    var panes = ["advanced_ping", "advanced_tr", "advanced_dns", "advanced_tcp", "advanced_udp", "advanced_http"];
+    if (item.style.display === 'none') {
+        for (var i=0; i < panes.length; i++) {
+                pane = document.getElementById(panes[i]);
+                pane.style.display = 'none';
+        }
+        item.style.display = '';
+    } else {
+        item.style.display = "none";
+    }
+}
+
+var dropdowns = {"pingdropdown":"ping", "trdropdown":"traceroute", "dnsdropdown":"dns" , "httpdropdown":"http", "tcpdropdown":"tcp", "udpdropdown":"udp"}
+var dropdownreverse = {"ping":"pingdropdown", "traceroute":"trdropdown", "dns":"dnsdropdown" , "http":"httpdropdown", "tcp":"tcpdropdown", "udp":"udpdropdown"}
 
 Date.prototype.getWeek = function() {
     var onejan = new Date(this.getFullYear(),0,1);
@@ -143,6 +172,7 @@ function filter()
             // For clustermap
             var color;
             if (data_chosen.indexOf("throughput") > -1){
+                console.log(avg_rtt);
                 if (avg_rtt>=green_thres[data_chosen]) {
                     color='green'
                 }
@@ -203,19 +233,7 @@ function createVisualization(){
 
     var data_chosen;
     var radio;
-    
-
-    // Fill in the drop-down menus
-    /*var dropdownelements = {"ping":{}, "traceroute":{}, "dns":{}, "http":{}, "tcp":{}}, udp:{}
-    for (var i = 0; i < filtered_data.length; i++) {
-        elem = filtered_data[i];
-    }
-
-    var dropdowns = {"pingdropdown":"ping", "trdropdown":"traceroute", "dnsdropdown":"dns" , "httpdropdown":"http", "tcpdropdown":"tcp", "udpdropdown":"udp"}
-    for (var key in dropdowns) {
-        var dropdown = document.getElementById(key);
-
-    }*/
+    var target;
 
     // Find the data type we are analyzing
     if (document.getElementById("complexchooserform").style.display === '') { 
@@ -237,7 +255,13 @@ function createVisualization(){
 
     for (var val in radio) {
         if (radio[val].checked) {
-            data_chosen = radio[val].value; 
+            data_chosen = radio[val].value;
+            if (data_chosen === "throughput") {
+                target = "Downlink";
+            } else if (data_chosen ==="rtt" || data_chosen ==="rtt_packetloss") {
+                target = "all";
+            }
+
         }
     }
 
@@ -246,6 +270,12 @@ function createVisualization(){
 
     var category = string_to_category[data_chosen];
     var data_chosen_type = string_to_datatype[data_chosen];
+
+    if (typeof target === 'undefined') {
+        var dropdownname = dropdownreverse[category];
+        var e = document.getElementById(dropdownname);
+        target = e.options[e.selectedIndex].value;
+    }
 
     //Clean up data
     filtered_data1 = jQuery.grep(data, function(elem, idx){
@@ -280,11 +310,45 @@ function createVisualization(){
     filtered_data = jQuery.grep(filtered_data, function(elem, idx){
         return(elem.net != "wifi");
     });
+    // Fill in the drop-down menus
+    if (!dropdownsinitialized) {
+        var dropdownelements = {"ping":{}, "traceroute":{}, "dns":{}, "http":{}, "tcp":{}, "udp":{}}
+        for (var i = 0; i < filtered_data.length; i++) {
+            elem = filtered_data[i];
+            for (var key in elem) {
+                if (key in dropdownelements){
+                    for (var key2 in elem[key]) {
+                        if (!(key2 in dropdownelements[key])) {
+                            dropdownelements[key][key2] = true;
+                        }
+                    }
+                }
+            }
+        }
 
-  generateMap(filtered_data, data_chosen_type, category, data_chosen)
+        for (var key in dropdowns) {
+            var dropdown = document.getElementById(key);
+            for (var key2 in dropdownelements[dropdowns[key]]) {
+                var option = document.createElement("option");
+                option.text = key2;
+                option.value = key2;
+                if (key2 == "all") {
+                    option.defaultSelected = true;
+                }
+                if (key2 == "Downlink") {
+                    option.defaultSelected = true;
+                }
+                dropdown.appendChild(option);
+            }
+        }
+        dropdownsinitialized = true;
+    }
+
+
+  generateMap(filtered_data, data_chosen_type, category, data_chosen, target)
 };
 
-function generateMap(filtered_data, data_chosen, category, data_name) {
+function generateMap(filtered_data, data_chosen, category, data_name, target) {
 
   /**********************************************************************
         Prepare data for loading
@@ -343,38 +407,50 @@ function generateMap(filtered_data, data_chosen, category, data_name) {
         clustermapelements = [];
         console.log(category);
         console.log(data_chosen);
+        console.log(target);
         for (var i = 0; i < filtered_data.length; i++) {
             elem = filtered_data[i];
 
-//            console.log(elem);
-
+            
             if (!(category in elem)) {
                 continue;
             }
-            var type = "all";
-            if (!("all" in elem[category])) {
-                if (!("False" in elem[category])) {
-                    continue;
-                }
-                type = "False";
-
+            if (!(target in elem[category])) {
+                continue;
             }
-            var count = elem[category][type]["ct"];
-            var avg_rtt = elem[category][type][data_chosen]; // TODO replace by actual filter
+            var type = "all";
+            var count = elem[category][target]["ct"];
+            var avg_rtt = elem[category][target][data_chosen]; 
+        console.log(avg_rtt);
             //var avg_rtt = elem["rtt"];
             // For clustermap
             var color;
-            if (avg_rtt<=green_thres[data_name]) {
-                color='green'
-            }
-            else if (avg_rtt>green_thres[data_name] && avg_rtt<=yellow_thres[data_name]) {
-                color='yellow'
-            }
-            else if (avg_rtt>yellow_thres[data_name] && avg_rtt<=orange_thres[data_name]) {
-                color='orange'
-            }
-            else{
-                color='red'
+            if (data_chosen.indexOf("throughput") > -1){
+                if (avg_rtt>=green_thres[data_name]) {
+                    color='green'
+                }
+                else if (avg_rtt<green_thres[data_name] && avg_rtt>=yellow_thres[data_name]) {
+                    color='yellow'
+                }
+                else if (avg_rtt<yellow_thres[data_name] && avg_rtt>=orange_thres[data_name]) {
+                    color='orange'
+                }
+                else{
+                    color='red'
+                }
+            } else {
+                if (avg_rtt<=green_thres[data_name]) {
+                    color='green'
+                }
+                else if (avg_rtt>green_thres[data_name] && avg_rtt<=yellow_thres[data_name]) {
+                    color='yellow'
+                }
+                else if (avg_rtt>yellow_thres[data_name] && avg_rtt<=orange_thres[data_name]) {
+                    color='orange'
+                }
+                else{
+                    color='red'
+                }
             }
             c = {}
             //c[color]=1
@@ -453,9 +529,15 @@ function legendContent(legend, data_chosen) {
     // A title for the legend.
     var legendTitle = title_options[data_chosen];
     // The min / max values for each bucket and the associated color.
+    var green_min = 0;
+    var red_max = 'oo';
+    if (data_chosen.indexOf("throughput") > -1) {
+        var green_min = 'oo';
+        var red_max = 0;
+    }
     var styles = [
         {
-            'min': 0,
+            'min': green_min,
             'max': green_thres[data_chosen],
             'color': 'green'
         },
@@ -471,7 +553,7 @@ function legendContent(legend, data_chosen) {
         },
         {
             'min': orange_thres[data_chosen],
-            'max': 'oo',
+            'max': red_max,
             'color': 'red'
         }
     ];

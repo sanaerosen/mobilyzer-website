@@ -93,16 +93,73 @@
         <div id="configArea">
             <h2 style="padding: 0; margin:0;">Filters</h2>
             <small>
-            <div id="datatypechooser">
                 <b>Data type</b>
-                <form name="datachooserform">
-                    <input type="radio" name="datatype" value="rtt" checked>Ping</br>
-                    <input type="radio" name="datatype" value="rtt_packetloss">Packet loss fraction</br>
-                    <input type="radio" name="datatype" value="dns_lookup">DNS lookup time</br>
-                    <input type="button" name="button" value="Set data type" onclick="createVisualization()">
-                </form>
-                More measurement  types coming soon...</br></br>
-            </div>
+                <div id="datachooserhide">
+
+                    <form name="datachooserform" id="simplechooserform">
+                        <input class="datatypebutton" type="radio" name="datatype" value="rtt" checked>Ping</br>
+                        <input class="datatypebutton" type="radio" name="datatype" value="rtt_packetloss">Packet loss fraction</br>
+                        <input class="datatypebutton" type="radio" name="datatype" value="throughput">Throughput</br>
+                        <input class="datatypebutton" type="button" name="button" value="Set data type" onclick="createVisualization()">
+                        <input class="datatypebutton" type="button" name="button_advanced" value="Show advanced..." onclick="toggleAdvanced()">
+                    </form>
+
+                <div id="complexchooserform" style="display:none">
+
+                    <div class="filteradvancedtitle"  onclick="toggleAdvancedPane('advanced_ping')"> Ping</div>
+                    <form name="datachooserform_ping"  id="advanced_ping" style="display:none">
+                        <select id="pingdropdown">
+                        </select></br>
+                        <input class="datatypebutton" type="radio" name="datatype_ping" value="ping_mean" checked>Mean</br>
+                        <input class="datatypebutton" type="radio" name="datatype_ping" value="ping_worst" >Worst-case per test</br>
+                        <input class="datatypebutton" type="radio" name="datatype_ping" value="ping_stdev" >Variation (stddev)</br>
+                        <input class="datatypebutton" type="radio" name="datatype_ping" value="ping_loss" >Packets lost</br>
+                    </form>
+
+                    <div class="filteradvancedtitle" onclick="toggleAdvancedPane('advanced_tr')"> Traceroute</div>
+                    <form name="datachooserform_tr" id="advanced_tr"  style="display:none">
+                        <select id="trdropdown">
+                        </select></br>
+                        <input class="datatypebutton" type="radio" name="datatype_tr" value="trace_first" checked>First hop latency</br>
+                        <input class="datatypebutton" type="radio" name="datatype_tr" value="trace_avg" >Avg. latency</br>
+                        <input class="datatypebutton" type="radio" name="datatype_tr" value="trace_num" >Number of hops</br>
+                    </form>
+
+                    <div class="filteradvancedtitle" onclick="toggleAdvancedPane('advanced_dns')"> DNS </div>
+                    <form name="datachooserform_dns"  id="advanced_dns" style="display:none">
+                        <select id="dnsdropdown">
+                        </select></br>
+                        <input class="datatypebutton" type="radio" name="datatype_dns" value="dns_rtt" checked >Latency</br>
+                    </form>
+
+                    <div class="filteradvancedtitle" onclick="toggleAdvancedPane('advanced_http')"> HTTP </div>
+                    <form name="datachooserform_http"  id="advanced_http" style="display:none">
+                        <select id="httpdropdown">
+                        </select></br>
+                        <input class="datatypebutton" type="radio" name="datatype_http" value="http_time" checked>Time to complete</br>
+                        <input class="datatypebutton" type="radio" name="datatype_http" value="http_throughput"> Avg. throughput</br>
+                    </form>
+
+                    <div class="filteradvancedtitle"  onclick="toggleAdvancedPane('advanced_tcp')"> TCP </div>
+                    <form name="datachooserform_tcp"  id="advanced_tcp" style="display:none">
+                        <select id="tcpdropdown">
+                        </select></br>
+                        <input class="datatypebutton" type="radio" name="datatype_tcp" value="tcp_throughput" checked>Throughput</br>
+                    </form>
+
+                    <div class="filteradvancedtitle" onclick="toggleAdvancedPane('advanced_udp')"> UDP </div>
+                    <form name="datachooserform_udp"  id="advanced_udp" style="display:none">
+                        <select id="udpdropdown">
+                        </select></br>
+                        <input class="datatypebutton" type="radio" name="datatype_udp" value="udp_jitter" checked>Jitter</br>
+                        <input class="datatypebutton" type="radio" name="datatype_udp" value="udp_outoforder" >Out of order</br>
+                        <input class="datatypebutton" type="radio" name="datatype_udp" value="udp_lossrate" >Loss rate</br>
+                    </form>
+
+                    <input class="datatypebutton" type="button" name="button" value="Set data type" onclick="createVisualization()">
+                    <input class="datatypebutton" type="button" name="button_simple" value="Show basic..." onclick="toggleAdvanced()">
+                </div>
+
             <!--                <span class="stattitle" onclick="slide('#area')"><b >Area</b></span><br />-->
             <div id="area">
             </div>
